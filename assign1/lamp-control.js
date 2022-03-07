@@ -26,8 +26,9 @@ function init() {
     const lamp_cone_height = 12;
 
     //rotation angles in radians TO_MODIFY
-    var lower_rotation =-Math.PI/4//-0.5;
-    var upper_rotation=Math.PI/2//1;
+    var lower_rotation =-Math.PI/4;
+    var upper_rotation=Math.PI/2;
+    var head_rotation=Math.PI/2;
 
     //base support 
     var faceMaterial_support = new THREE.MeshBasicMaterial({ color: '#b3f542' });
@@ -54,7 +55,7 @@ function init() {
     lower_lamp.add(lower_arm);
 
     //rotate lower_lamp group
-    lower_lamp.rotateX(lower_rotation);
+    lower_lamp.rotation.x = lower_rotation;
     lower_lamp.position.set(0, joint_radius, 0);
     
     //--------------------------------------- upper lamp group ---------------------------------------
@@ -63,6 +64,7 @@ function init() {
     
     //add middle joint
     var mesh_joint_mid = new THREE.MeshBasicMaterial({ color: '#a83256' });
+    upper_lamp.rotation.x = upper_rotation;
     var joint_mid_geometry = new THREE.SphereGeometry(joint_radius, 15, 15);
     var joint_mid = new THREE.Mesh(joint_mid_geometry, mesh_joint_mid);
     upper_lamp.add(joint_mid);
@@ -75,7 +77,7 @@ function init() {
     upper_lamp.add(upper_arm);
 
     //rotate and relatively position upper_lamp group
-    upper_lamp.rotateX(upper_rotation);
+    upper_lamp.rotation.x = upper_rotation;
     upper_lamp.position.set(0, arm_height, 0);   
 
     //-------------------------------------- lamp light group --------------------------------------
@@ -111,7 +113,7 @@ function init() {
     lamp_light.add(lamp_bulb);
 
     //rotate and relatively position lamp light group
-    lamp_light.rotateX(Math.PI / 2);
+    lamp_light.rotation.x = head_rotation;
     lamp_light.position.set(0, arm_height, 0);
 
 
@@ -145,23 +147,38 @@ for ( let i = 0; i < 8; i ++ ) {
     
     // setup the control gui
     var controls = new function () {
-	this.speed = -10
-        this.redraw = function () {
+        //Lower joint x rotation
+        this.lower_arm_joint = lower_rotation
+            this.rotate_lower_arm = function () {
+                lower_lamp.rotation.x = controls.lower_arm_joint;
+                renderer.render(scene, camera);
+            };
+        //Upper joint x rotation
+        this.upper_arm_joint = upper_rotation
+        this.rotate_upper_arm = function () {
+            upper_lamp.rotation.x = controls.upper_arm_joint;
+            renderer.render(scene, camera);
+        };
+        //Lamp head x rotation (left and right)
+        this.head_left_and_right = 0
+        this.rotateZ_head = function () {
+            lamp_light.rotation.z = controls.head_left_and_right;
+            renderer.render(scene, camera);
+        };
+        //Lamp head y rotation (up and down)
+        this.head_up_and_down = head_rotation
+        this.rotateX_head = function () {
+            lamp_light.rotation.x = controls.head_up_and_down;
+            renderer.render(scene, camera);
         };
     };
 
-
+    //GUI controls
     var gui = new dat.GUI();
-    gui.add(controls, 'speed', -15, -1).onChange(controls.redraw);
-    render();
-    
-    function render() {
-        // render using requestAnimationFrame - register function
-        requestAnimationFrame(render);
-	speed = 2 ** controls.speed
-	
-        renderer.render(scene, camera);
-    }
+    gui.add(controls, 'lower_arm_joint', -Math.PI, Math.PI).onChange(controls.rotate_lower_arm);
+    gui.add(controls, 'upper_arm_joint', -Math.PI, Math.PI).onChange(controls.rotate_upper_arm);
+    gui.add(controls, 'head_left_and_right', -Math.PI, Math.PI).onChange(controls.rotateZ_head);
+    gui.add(controls, 'head_up_and_down', -Math.PI, Math.PI).onChange(controls.rotateX_head);
     
 }
 
