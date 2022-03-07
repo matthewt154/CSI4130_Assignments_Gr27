@@ -20,86 +20,110 @@ function init() {
     //arm, two for the lamp shade and one for the bulb plus 3 spheres 
     //for the three respective joints, all children of lamp scene
     const base_height = -20;
+    const arm_height = 25;
+    const joint_radius = 2;
+    const lamp_body_height = 12;
+    const lamp_cone_height = 12;
 
     //rotation angles in radians TO_MODIFY
-    var lower_rotation =-0.5;
-    var upper_rotation=0.8;
+    var lower_rotation =-Math.PI/4//-0.5;
+    var upper_rotation=Math.PI/2//1;
 
     //base support 
-    var faceMaterial_support = new THREE.MeshBasicMaterial({ color: '#49BEA2' });
+    var faceMaterial_support = new THREE.MeshBasicMaterial({ color: '#b3f542' });
     var cylinderGeometry_support = new THREE.CylinderGeometry(10,10, 3, 12);
     var support = new THREE.Mesh(cylinderGeometry_support, faceMaterial_support);
     support.position.set (0, base_height, 0);
     lamp.add(support);
 
-    //lower lamp group
+    //--------------------------------------- lower lamp group ---------------------------------------
     var lower_lamp = new THREE.Group();
-    lower_lamp.position.set(0, base_height+3);
-    lamp.add(lower_lamp);
+    support.add(lower_lamp);
 
-    //add lower sphere joint and arm
-    var mesh_joint_one = new THREE.MeshBasicMaterial({ color: '#49BEA2' });
-    var joint_one_geometry = new THREE.SphereGeometry(2.5, 15, 15);
+    //add lower sphere joint
+    var mesh_joint_one = new THREE.MeshBasicMaterial({ color: '#a83256' });
+    var joint_one_geometry = new THREE.SphereGeometry(joint_radius, 15, 15);
     var joint_one = new THREE.Mesh(joint_one_geometry, mesh_joint_one);
     lower_lamp.add(joint_one);
 
+    //add lower arm
     var faceMaterial_lower_arm = new THREE.MeshBasicMaterial({ color: '#49BEA2' });
-    var cylinderGeometry_lower_arm = new THREE.CylinderGeometry(2,2, 25, 12);
+    var cylinderGeometry_lower_arm = new THREE.CylinderGeometry(2,2, arm_height, 12);
     var lower_arm = new THREE.Mesh(cylinderGeometry_lower_arm, faceMaterial_lower_arm);
-    lower_arm.position.set(0, base_height+33, 0);
+    lower_arm.position.set(0, (arm_height/2), 0);
     lower_lamp.add(lower_arm);
 
+    //rotate lower_lamp group
     lower_lamp.rotateX(lower_rotation);
+    lower_lamp.position.set(0, joint_radius, 0);
     
-    //middle joint and upper arm 
-    var upper_lamp_base_x=Math.cos(lower_rotation)*25; 
-    var upper_lamp_base_y=Math.sin(lower_rotation)*25;
+    //--------------------------------------- upper lamp group ---------------------------------------
     var upper_lamp = new THREE.Group();
-    upper_lamp.position.set(upper_lamp_base_x, upper_lamp_base_y);
     lower_lamp.add(upper_lamp);
-
-    var mesh_joint_mid = new THREE.MeshBasicMaterial({ color: '#49BEA2' });
-    var joint_mid_geometry = new THREE.SphereGeometry(2.5, 15, 15);
+    
+    //add middle joint
+    var mesh_joint_mid = new THREE.MeshBasicMaterial({ color: '#a83256' });
+    var joint_mid_geometry = new THREE.SphereGeometry(joint_radius, 15, 15);
     var joint_mid = new THREE.Mesh(joint_mid_geometry, mesh_joint_mid);
     upper_lamp.add(joint_mid);
 
+    //add upper arm
     var faceMaterial_upper_arm = new THREE.MeshBasicMaterial({ color: '#49BEA2' });
-    var cylinderGeometry_upper_arm = new THREE.CylinderGeometry(2, 2, 15, 12);
+    var cylinderGeometry_upper_arm = new THREE.CylinderGeometry(2, 2, arm_height, 12);
     var upper_arm = new THREE.Mesh(cylinderGeometry_upper_arm, faceMaterial_upper_arm);
-    upper_arm.position.set(0, base_height+27, 0);
-    //upper_arm.rotate;
+    upper_arm.position.set(0, arm_height /2.0, 0);
     upper_lamp.add(upper_arm);
+
+    //rotate and relatively position upper_lamp group
     upper_lamp.rotateX(upper_rotation);
-   
+    upper_lamp.position.set(0, arm_height, 0);   
 
-    
+    //-------------------------------------- lamp light group --------------------------------------
     //Lamp light components are grouped
-    var lamp_light_x=Math.cos(upper_rotation)*25; 
-    var lamp_light_y=Math.sin(upper_rotation)*25;
     var lamp_light = new THREE.Group();
-    lamp_light.position.set(lamp_light_x, lamp_light_y);
     upper_lamp.add(lamp_light);
-    //upper sphere joint 
-    var mesh_joint_top = new THREE.MeshBasicMaterial({ color: '#49BEA2' });
-    var joint_top_geometry = new THREE.SphereGeometry(2.5, 15, 15);
-    var joint_top = new THREE.Mesh(joint_top_geometry, mesh_joint_top);
-    lamp_light.add(joint_top);
-    //lamp cylinder
-    var faceMaterial_lamp_cylinder = new THREE.MeshBasicMaterial({ color: 'green' });
-    var cylinderGeometry_lamp_cylinder = new THREE.CylinderGeometry(5,5, 13, 12);
-    var lamp_cylinder = new THREE.Mesh(cylinderGeometry_lamp_cylinder, faceMaterial_lamp_cylinder);
-    
-    //lamp cone 
 
-    //bulb 
-    const points = [];
+    //add upper sphere joint 
+    var mesh_joint_top = new THREE.MeshBasicMaterial({ color: '#a83256' });
+    var joint_top_geometry = new THREE.SphereGeometry(joint_radius, 15, 15);
+    var joint_top = new THREE.Mesh(joint_top_geometry, mesh_joint_top);
+
+    lamp_light.add(joint_top);
+    //add lamp body
+    var faceMaterial_lamp_body = new THREE.MeshBasicMaterial({ color: '#42f5ec' });
+    var cylinderGeometry_lamp_body = new THREE.CylinderGeometry(3,3, lamp_body_height, 12);
+    var lamp_body = new THREE.Mesh(cylinderGeometry_lamp_body, faceMaterial_lamp_body);
+    lamp_body.position.set(0, 0, -joint_radius*2);
+    lamp_light.add(lamp_body);
+    
+    //add lamp cone 
+    var faceMaterial_lamp_cone = new THREE.MeshBasicMaterial({ color: '#42a4f5' });
+    var cylinderGeometry_lamp_cone = new THREE.CylinderGeometry(8,3, lamp_cone_height, 12);
+    var lamp_cone = new THREE.Mesh(cylinderGeometry_lamp_cone, faceMaterial_lamp_cone);
+    lamp_cone.position.set(0, lamp_body_height, -joint_radius*2);
+    lamp_light.add(lamp_cone);
+
+    //add bulb 
+    var mesh_lamp_bulb = new THREE.MeshBasicMaterial({ color: '#eff542' });
+    var lamp_bulb_geometry = new THREE.SphereGeometry(3, 15, 15);
+    var lamp_bulb = new THREE.Mesh(lamp_bulb_geometry, mesh_lamp_bulb);
+    lamp_bulb.position.set(0, lamp_body_height/2+lamp_cone_height, -joint_radius*2);
+    lamp_light.add(lamp_bulb);
+
+    //rotate and relatively position lamp light group
+    lamp_light.rotateX(Math.PI / 2);
+    lamp_light.position.set(0, arm_height, 0);
+
+
+    //TODO: is this needed?
+    /*const points = [];
 for ( let i = 0; i < 8; i ++ ) {
 	points.push( new THREE.Vector2( Math.sin( i * 0.2 ) * 3 + 4, ( i - 5 ) * 1 ) );
 }
     var faceMaterial_bulb = new THREE.MeshBasicMaterial({ color: '#e2ae38'});
     var geometry_bulb = new THREE.LatheGeometry(points);
-    const bulb = new THREE.Mesh(geometry_bulb, faceMaterial_bulb);
-    upper_lamp.add(bulb);
+    const bulb = new THREE.Mesh(geometry_bulb, faceMaterial_bulb);*/
+    //upper_lamp.add(bulb);
     
     //==========Camera controls========================
 
