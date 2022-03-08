@@ -116,18 +116,22 @@ function init() {
     lamp_light.rotation.x = head_rotation;
     lamp_light.position.set(0, arm_height, 0);
 
+    //adding a point to rotate around ("at" point)
+    var at_point= new THREE.Group();
+    scene.add(at_point);
 
-    //TODO: is this needed?
-    /*const points = [];
-for ( let i = 0; i < 8; i ++ ) {
-	points.push( new THREE.Vector2( Math.sin( i * 0.2 ) * 3 + 4, ( i - 5 ) * 1 ) );
-}
-    var faceMaterial_bulb = new THREE.MeshBasicMaterial({ color: '#e2ae38'});
-    var geometry_bulb = new THREE.LatheGeometry(points);
-    const bulb = new THREE.Mesh(geometry_bulb, faceMaterial_bulb);*/
-    //upper_lamp.add(bulb);
+    var mesh_point = new THREE.MeshBasicMaterial({ color: 'red' });
+    var point_geometry = new THREE.SphereGeometry(1, 15, 15);
+    var point = new THREE.Mesh(point_geometry, mesh_point);
+    at_point.add(point);
+
     
     //==========Camera controls========================
+    var cameraParams = {
+        radius: 125, //constant
+        a: Math.PI, //z rotation azimuth
+        theta: Math.PI/2 //y rotation
+    };
 
     // need a camera to look at things
     // calcaulate aspectRatio
@@ -135,9 +139,12 @@ for ( let i = 0; i < 8; i ++ ) {
     var width = 20;
     // Camera needs to be global
     camera = new THREE.PerspectiveCamera(45, aspectRatio, 1, 1000);
-    // position the camera back and point to the center of the scene
-    camera.position.x = 100;
-    camera.lookAt(scene.position);
+    // position the camera back and point to the center of the scene (aka the red point) 
+    //using spherical cartesian coordinates
+    camera.position.x = cameraParams.radius * Math.cos(cameraParams.a) * Math.sin(cameraParams.theta);
+    camera.position.y = cameraParams.radius * Math.sin(cameraParams.a) * Math.sin(cameraParams.theta);
+    camera.position.z = cameraParams.radius * Math.cos(cameraParams.theta);
+    camera.lookAt(point.position);
 
     // render the scene
     renderer.render(scene, camera);
@@ -173,15 +180,62 @@ for ( let i = 0; i < 8; i ++ ) {
         };
     };
 
+    // setting up the camera control gui
+    var camera_control = new function () {
+        //camera placement
+        //y rotation
+        this.y_rotation = cameraParams.theta
+        this.z_rotation = cameraParams.a
+        this.rotateY_camera = function () {
+            camera.position.x = cameraParams.radius * Math.cos(camera_control.z_rotation) * Math.sin(camera_control.y_rotation);
+            camera.position.y = cameraParams.radius * Math.sin(camera_control.z_rotation) * Math.sin(camera_control.y_rotation);
+            camera.position.z = cameraParams.radius * Math.cos(camera_control.y_rotation);
+            camera.lookAt(point.position);
+            renderer.render(scene, camera);
+        };
+        //z rotation
+        this.rotateZ_camera = function () {
+            camera.position.x = cameraParams.radius * Math.cos(camera_control.z_rotation) * Math.sin(camera_control.y_rotation);
+            camera.position.y = cameraParams.radius * Math.sin(camera_control.z_rotation) * Math.sin(camera_control.y_rotation);
+            camera.position.z = cameraParams.radius * Math.cos(camera_control.y_rotation);
+            camera.lookAt(point.position);
+            renderer.render(scene, camera);
+            
+        };
+        //at point location
+        this.pointing_location_x = point.position.x
+
+        this.change_pointer_x = function () {
+            point.position.x = camera_control.pointing_location_x; 
+            camera.lookAt(point.position);
+            renderer.render(scene, camera);
+        };
+        
+        this.pointing_location_y = point.position.y; 
+        this.change_pointer_y = function () {
+            point.position.y = camera_control.pointing_location_y; 
+            camera.lookAt(point.position);
+            renderer.render(scene, camera);
+        }; 
+    };
+
     //GUI controls
     var gui = new dat.GUI();
     gui.add(controls, 'lower_arm_joint', -Math.PI, Math.PI).onChange(controls.rotate_lower_arm);
     gui.add(controls, 'upper_arm_joint', -Math.PI, Math.PI).onChange(controls.rotate_upper_arm);
     gui.add(controls, 'head_left_and_right', -Math.PI, Math.PI).onChange(controls.rotateZ_head);
     gui.add(controls, 'head_up_and_down', -Math.PI, Math.PI).onChange(controls.rotateX_head);
-    
+
+    //Camera GUI Controls
+    var cam_gui = new dat.GUI();
+    cam_gui.add(camera_control, 'y_rotation', -Math.PI, Math.PI).onChange(camera_control.rotateY_camera);
+    cam_gui.add(camera_control, 'z_rotation', -Math.PI, Math.PI).onChange(camera_control.rotateZ_camera);    
+    cam_gui.add(camera_control, 'pointing_location_x', -20, 20).onChange(camera_control.change_pointer_x);  
+    cam_gui.add(camera_control, 'pointing_location_y', -20, 20).onChange(camera_control.change_pointer_y);    
+
 }
 
+    
 function onResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
