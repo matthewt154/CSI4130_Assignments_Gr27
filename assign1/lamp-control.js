@@ -233,8 +233,53 @@ function init() {
     cam_gui.add(camera_control, 'pointing_location_x', -20, 20).onChange(camera_control.change_pointer_x);  
     cam_gui.add(camera_control, 'pointing_location_y', -20, 20).onChange(camera_control.change_pointer_y);    
 
-}
+    //------------------------jump animation----------------------------
+    var controls_animation = new function () {
+        this.jump_animation = false
+            this.toggle_jump = function () {
 
+                if(this.jump_animation) {
+                    //jump disabled
+                    this.jump_animation = false
+                } else {
+                    //jump enabled
+                    this.jump_animation = true
+                    render_jump();
+                    console.log("jump enabled")
+                }
+
+            };
+        };
+    
+    var gui = new dat.GUI();
+    gui.add(controls_animation, 'jump_animation').onChange(controls_animation.toggle_jump);
+
+    function render_jump() {
+
+        //Disables if switch is off
+        if (!controls_animation.jump_animation) {
+            frame_int = 0;
+            return
+        }
+
+        // render using requestAnimationFrame - register function
+        requestAnimationFrame(render_jump);
+
+        //adds 3 degrees per frame
+        frame_int = frame_int + 3*Math.PI/180
+
+        //Animates the upper arm, the lower arm and the lamp head and support
+        lower_lamp.rotation.x = (Math.PI/4)*(Math.sin(-frame_int)) + Math.PI + Math.PI/2 + Math.PI/4
+        upper_lamp.rotation.x = (Math.PI/2)*(Math.sin(frame_int)) + Math.PI/2
+        lamp_light.rotation.x = (Math.PI/2)*(Math.sin(-frame_int)) + Math.PI/2 - Math.PI/8
+        support.position.set(0, 20*Math.sin(-frame_int - 10*Math.PI/180), 0);
+
+        //render
+        renderer.render(scene, camera);
+    }
+}
+//initialises frame counter for jump animation
+frame_int = 0
     
 function onResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
