@@ -1,3 +1,8 @@
+//---------Group 27---------
+//Marthy Hardika 300074614
+//Alexandre Latimer 300027473
+//Matthew Tran 300028206
+
 //Initialzie the lamp
 function init() {
      // add our rendering surface and initialize the renderer

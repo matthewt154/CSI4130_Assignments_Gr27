@@ -1,3 +1,8 @@
+//---------Group 27---------
+//Marthy Hardika 300074614
+//Alexandre Latimer 300027473
+//Matthew Tran 300028206
+
 // Vertex shader program
 var VSHADER_SOURCE =
   'attribute vec4 a_Position;\n' +
@@ -149,7 +154,10 @@ function initVertexBuffers(gl) {
 
 function draw(gl, n, currentAngle, modelMatrix, u_ModelMatrix) {
   // Set the rotation matrix
-  modelMatrix.setRotate(currentAngle, 0, 0, 1); // Rotation angle, rotation axis (0, 0, 1)
+  //modelMatrix.setRotate(currentAngle, 0, 0, 1); // Rotation angle, rotation axis (0, 0, 1)
+
+  i = (i+Math.PI/180) % (2*Math.PI)
+  modelMatrix.setTranslate(Math.cos(-i)/4,Math.sin(-i)/4,0);
  
   // Pass the rotation matrix to the vertex shader
   gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
@@ -160,6 +168,7 @@ function draw(gl, n, currentAngle, modelMatrix, u_ModelMatrix) {
   // Draw the Shape
   gl.drawArrays(gl.TRIANGLES, 0, n);
 }
+i = 0
 
 // Last time that this function was called
 var g_last = Date.now();
