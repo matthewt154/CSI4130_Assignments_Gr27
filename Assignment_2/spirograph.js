@@ -79,24 +79,36 @@ function init() {
     function render() {
         // render using requestAnimationFrame - register function
         requestAnimationFrame(render);
-        //speed = 2 ** controls.speed
-            // earth group rotates arond sun
-        //earthRotGroup.rotation.z = (earthRotGroup.rotation.z + 3 * speed) % (2.0 * Math.PI);
-        // Teapot has to compensate to stay on top of earth
-        //earthGroup.rotation.z = (earthGroup.rotation.z - 3 * speed) % (2.0 * Math.PI);
-        // console.log(earthRotGroup.rotation.z , earthGroup.rotation.z)
-        // saturn group rotates arond sun
-        //saturnRotGroup.rotation.z = (saturnRotGroup.rotation.z + speed) % (2.0 * Math.PI);
-        // saturn ring and moon rotate around saturn
-        //saturnGroup.rotation.x = (saturnGroup.rotation.x + 5 * speed) % (2.0 * Math.PI);
-        //saturnGroup.rotation.y = (saturnGroup.rotation.y + 5 * speed) % (2.0 * Math.PI);
-        // Todo: Make sure to look at Earth (moves!) or Sun (does not move)
 
+        //add 3 degrees per frame 
+        t = t + 3*Math.PI/(180*6)
+
+        teapot.position.x = R *((1-k*Math.cos(t)) + l*k*Math.cos((1-k)/k *t));
+        teapot.position.y = R *((1-k*Math.sin(t)) + l*k*Math.sin((1-k)/k *t));
+
+        //drawing spirograph path? 
+        var material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
+
+        var points = [];
+        points.push( teapot.position.x );
+        points.push( teapot.position.y );
+        points.push (teapot.position.z);
+       
+
+        var geometry = new THREE.BufferGeometry().setFromPoints( points );
+        var line = new THREE.Line( geometry, material );
+        scene.add(line);
         renderer.render(scene, camera);
     }
 
 }
 
+//free curve parameter initial 
+t = 0;
+z = 21; //fixed value 
+R = 15; //outer radius
+k = 0.3; //ratio radius inner circle of outer circle 
+l = 9; //point of pen on inner circle over radius of inner circle 
 
 function onResize() {
     //Set resized aspect
