@@ -70,10 +70,25 @@ function init() {
 
     };
 
+    //Setup controls for k and l for the spirograph
+    var spiroControls = new function() {
+        this.l = 0.9
+        this.k = 0.3
+        this.redraw = function () {
+        };
+        this.reset = function() {
+            this.l = 0.9
+            this.k = 0.3
+        }
+    }
+
 
     var gui = new dat.GUI();
     gui.add(controls, 'switchView')
     gui.add(controls, 'view').listen();
+    gui.add(spiroControls, 'l', -5, 5).onChange(spiroControls.redraw).listen()
+    gui.add(spiroControls,'k', -1,2).onChange(spiroControls.redraw).listen()
+    gui.add(spiroControls, 'reset')
     render();
 
     function render() {
@@ -84,6 +99,9 @@ function init() {
         t = t + 10*Math.PI/(180*6)
         const past_x = teapot.position.x ;
         const past_y = teapot.position.y ;
+
+        l = spiroControls.l
+        k = spiroControls.k
 
         teapot.position.x = R *(((1-k)*Math.cos(t)) + l*k*Math.cos((1-k)/k *t));
         teapot.position.y = R *(((1-k)*Math.sin(t)) + l*k*Math.sin((1-k)/k *t));
