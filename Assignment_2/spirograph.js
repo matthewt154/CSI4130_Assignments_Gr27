@@ -81,23 +81,26 @@ function init() {
         requestAnimationFrame(render);
 
         //add 3 degrees per frame 
-        t = t + 3*Math.PI/(180*6)
+        t = t + 10*Math.PI/(180*6)
+        const past_x = teapot.position.x ;
+        const past_y = teapot.position.y ;
 
-        teapot.position.x = R *((1-k*Math.cos(t)) + l*k*Math.cos((1-k)/k *t));
-        teapot.position.y = R *((1-k*Math.sin(t)) + l*k*Math.sin((1-k)/k *t));
+        teapot.position.x = R *(((1-k)*Math.cos(t)) + l*k*Math.cos((1-k)/k *t));
+        teapot.position.y = R *(((1-k)*Math.sin(t)) + l*k*Math.sin((1-k)/k *t));
 
-        //drawing spirograph path? 
+        
+        //drawing spirograph path 
         var material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
 
         var points = [];
-        points.push( teapot.position.x );
-        points.push( teapot.position.y );
-        points.push (teapot.position.z);
+        points.push(new THREE.Vector3( past_x, past_y, 0 ) );
+        points.push( new THREE.Vector3( teapot.position.x, teapot.position.y, 0 ) );
+
        
 
         var geometry = new THREE.BufferGeometry().setFromPoints( points );
         var line = new THREE.Line( geometry, material );
-        scene.add(line);
+        scene.add (line); 
         renderer.render(scene, camera);
     }
 
@@ -105,10 +108,10 @@ function init() {
 
 //free curve parameter initial 
 t = 0;
-z = 21; //fixed value 
-R = 15; //outer radius
+z = 25; //fixed value 
+R = 25; //outer radius
 k = 0.3; //ratio radius inner circle of outer circle 
-l = 9; //point of pen on inner circle over radius of inner circle 
+l = 0.9; //point of pen on inner circle over radius of inner circle 
 
 function onResize() {
     //Set resized aspect
