@@ -12,9 +12,13 @@ function init() {
     renderer = new THREE.WebGLRenderer();
     // set some state - here just clear color
     renderer.setClearColor(new THREE.Color(0x333333));
+    renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize(window.innerWidth, window.innerHeight);
     // add the output of the renderer to the html element
     container.appendChild(renderer.domElement);
+    
+    //Render autoclear is off to be able to display both viewports
+    renderer.autoClear = false
 
 
     // All drawing will be organized in a scene graph
@@ -32,43 +36,23 @@ function init() {
     teapot.position.set(50, 0, 0);
     scene.add(teapot);
 
-    // need a camera to look at things
-    // calcaulate aspectRatio
     var aspectRatio = window.innerWidth / window.innerHeight;
-    // Camera needs to be global
-    camera = new THREE.PerspectiveCamera(90, aspectRatio, 1, 1000);
-    //camera = new THREE.OrthographicCamera(szScreen * aspect / -2, szScreen * aspect / 2, szScreen / 2, szScreen / -2, -500, 500);
-    // position the camera back and point to the center of the scene
-    camera.position.z = szScreen / 2;
-    camera.lookAt(scene.position);
+    SCREEN_HEIGHT = window.innerHeight
+    SCREEN_WIDTH = window.innerWidth
 
-    // render the scene
-    renderer.render(scene, camera);
+    //Camera for Front View
+    cameraFront = new THREE.PerspectiveCamera( 90, aspectRatio, 1, 1000 );
+	cameraFront.position.z = szScreen/2;
+    cameraFront.lookAt(scene.position);
+    //cameraHelper = new THREE.CameraHelper( cameraFront );
+    //scene.add( cameraHelper );
 
-    view = "Front"
-    // setup the control gui
-    var controls = new function() {
-        this.view = "Front";
-        //Switches between the front and top views
-        this.switchView = function() {
-            if (this.view == "Front") {
-                camera.position.z = 0
-                camera.position.y = szScreen/2
-                camera.lookAt(scene.position);
-                this.view = "Top"
-                console.log("Top")          
-            }
-            else {
-                camera.position.z = szScreen/2
-                camera.position.y = 0
-                camera.lookAt(scene.position);
-                this.view = "Front"
-                console.log("Front")
-            }
-            view = this.view
-        }
-
-    };
+    //Camera for Top View
+	cameraTop = new THREE.PerspectiveCamera( 90, aspectRatio, 1, 1000 );
+    cameraTop.position.y = szScreen/2;
+    cameraTop.lookAt(scene.position);
+    //cameraTopHelper = new THREE.CameraHelper( cameraTop );
+	//scene.add( cameraTopHelper );
 
     //Setup controls for k and l for the spirograph
     var spiroControls = new function() {
@@ -84,8 +68,6 @@ function init() {
 
 
     var gui = new dat.GUI();
-    gui.add(controls, 'switchView')
-    gui.add(controls, 'view').listen();
     gui.add(spiroControls, 'l', -5, 5).onChange(spiroControls.redraw).listen()
     gui.add(spiroControls,'k', -1,2).onChange(spiroControls.redraw).listen()
     gui.add(spiroControls, 'reset')
@@ -120,7 +102,18 @@ function init() {
         var geometry = new THREE.BufferGeometry().setFromPoints( points );
         var line = new THREE.Line( geometry, material );
         scene.add (line); 
-        renderer.render(scene, camera);
+
+        //Clear renderer manually
+        renderer.clear();
+
+        //Render Front Camera Viewport 
+        renderer.setViewport( 0, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT );
+        renderer.render( scene, cameraFront );
+
+        //Render Top Camera Viewport 
+        renderer.setViewport( SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT );
+        renderer.render( scene, cameraTop );
+
     }
 
 }
@@ -135,9 +128,9 @@ l = 0.9; //point of pen on inner circle over radius of inner circle
 function onResize() {
     //Set resized aspect
     var aspect = window.innerWidth / window.innerHeight;
-    camera.aspect = aspect;
+    cameraFront.aspect = aspect;
 
-    camera.updateProjectionMatrix();
+    cameraFront.updateProjectionMatrix();
     // If we use a canvas then we also have to worry of resizing it
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
