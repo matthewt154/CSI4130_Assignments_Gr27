@@ -20,7 +20,7 @@ function init() {
     // All drawing will be organized in a scene graph
     var scene = new THREE.Scene();
     // A camera with fovy = 90deg means the z distance is y/2
-    szScreen = 120;
+    szScreen = 180;
 
     // show axes at the origin
     var axes = new THREE.AxesHelper(10);
@@ -29,7 +29,7 @@ function init() {
     // Add teapot to the scene
     var teapotGeometry = new THREE.TeapotGeometry(3, 15, true, true, true, false, false);
     var teapot = new THREE.Mesh(teapotGeometry, new THREE.MeshBasicMaterial({ color: 'teal' }));
-    teapot.position.set(0, 0, 0);
+    teapot.position.set(50, 0, 0);
     scene.add(teapot);
 
     // need a camera to look at things
@@ -97,24 +97,25 @@ function init() {
 
         //add 3 degrees per frame 
         t = t + 10*Math.PI/(180*6)
+
         const past_x = teapot.position.x ;
         const past_y = teapot.position.y ;
+        const past_z = teapot.position.z ;
 
         l = spiroControls.l
         k = spiroControls.k
 
         teapot.position.x = R *(((1-k)*Math.cos(t)) + l*k*Math.cos((1-k)/k *t));
-        teapot.position.y = R *(((1-k)*Math.sin(t)) + l*k*Math.sin((1-k)/k *t));
-
+        teapot.position.y = R *(((1-k)*Math.sin(t)) - l*k*Math.sin((1-k)/k *t));
+        teapot.position.z = R *(((1-k)*Math.sin(t)) + l*k*Math.sin((1-k)/k *t));
         
+
         //drawing spirograph path 
         var material = new THREE.LineBasicMaterial( { color: 0x0000ff } );
 
         var points = [];
-        points.push(new THREE.Vector3( past_x, past_y, 0 ) );
-        points.push( new THREE.Vector3( teapot.position.x, teapot.position.y, 0 ) );
-
-       
+        points.push(new THREE.Vector3( past_x, past_y, past_z ) );
+        points.push( new THREE.Vector3( teapot.position.x, teapot.position.y, teapot.position.z ) );      
 
         var geometry = new THREE.BufferGeometry().setFromPoints( points );
         var line = new THREE.Line( geometry, material );
@@ -127,7 +128,7 @@ function init() {
 //free curve parameter initial 
 t = 0;
 z = 25; //fixed value 
-R = 25; //outer radius
+R = 50; //outer radius
 k = 0.3; //ratio radius inner circle of outer circle 
 l = 0.9; //point of pen on inner circle over radius of inner circle 
 
