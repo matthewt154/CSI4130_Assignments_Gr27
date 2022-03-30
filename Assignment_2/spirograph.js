@@ -36,6 +36,30 @@ function init() {
     teapot.position.set(50, 0, 0);
     scene.add(teapot);
 
+    // spirograph group
+    var spirographGroup = new THREE.Group();
+    scene.add(spirographGroup)
+ 
+	// extend THREE.Curve
+	function spirographCurve( aSpeed, bSpeed, delta, scale ) {
+		THREE.Curve.call( this );
+		this.aSpeed = ( aSpeed === undefined ) ? 1 : aSpeed;
+		this.bSpeed = ( bSpeed === undefined ) ? 1 : bSpeed;
+		this.delta = ( delta === undefined ) ? 0 : delta;
+		this.scale = ( scale === undefined ) ? 1 : scale;
+	}
+
+	spirographCurve.prototype = Object.create( THREE.Curve.prototype );
+	spirographCurve.prototype.constructor = spirographCurve;
+
+    spirographCurve.prototype.getPoint = function ( R, k, l, t ) {
+		
+        var tx = R *(((1-k)*Math.cos(t)) + l*k*Math.cos((1-k)/k *t));
+        var ty = R *(((1-k)*Math.sin(t)) - l*k*Math.sin((1-k)/k *t));
+        var tz = 0 //R *(((1-k)*Math.sin(t)) + l*k*Math.sin((1-k)/k *t));
+		return new THREE.Vector3( tx, ty, tz ).multiplyScalar( this.scale );
+	};
+
     var aspectRatio = window.innerWidth / window.innerHeight;
     SCREEN_HEIGHT = window.innerHeight
     SCREEN_WIDTH = window.innerWidth
@@ -60,11 +84,45 @@ function init() {
         this.k = 0.3
         this.redraw = function () {
         };
+        this.update = function() {
+			updateSpirograph(controls.k, controls.l );
+		};
         this.reset = function() {
             this.l = 0.9
             this.k = 0.3
         }
     }
+
+    function updateSpirograph(k, l) {
+		spirographGroup.remove( spirographMesh );
+        //add 3 degrees per frame 
+        t = t + 10*Math.PI/(180*6)
+
+		var spiroPath = new spirographCurve( 50, 0.3, 0.9, t );
+		var geometry = new THREE.TubeGeometry( spiroPath, segments, radius, radialSegments, false );
+
+		// Loop over all vertices and update their color based on the distance to the plane
+		var pt = new THREE.Vector3();
+		var dCol = function ( nId ) {
+			var dist = geometry.vertices[nId].distanceTo(pt);
+			return jet(Math.abs(dist)/(Math.sqrt(2)));	
+		}
+		for (var i = 0; i < geometry.faces.length; i++) {
+			// Fix me for proper vertex coloring
+			geometry.faces[i].vertexColors = [dCol(geometry.faces[i].a),
+						dCol(geometry.faces[i].a),
+						dCol(geometry.faces[i].a)];
+		}
+		geometry.colorsNeedUpdate = true;
+		// Select vertex coloring
+		var vertColMat = new THREE.MeshBasicMaterial({vertexColors: THREE.VertexColors});
+		lissajousMesh = new THREE.Mesh( geometry, vertColMat );
+		lissajousGroup.add( lissajousMesh );
+	}
+	
+	// create a dummy node 
+	spirographMesh = new THREE.Group();		
+	updateSpirograph(controls.k, controls.l);
 
 
     var gui = new dat.GUI();
